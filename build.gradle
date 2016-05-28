@@ -16,6 +16,7 @@ jar {
     archiveName = "${rootProject.name}-${rootProject.version}.jar"
     manifest {
         attributes (
+		     'Main-Class': 'proffun.Profiler',
              'Premain-Class': 'proffun.Agent',
              'Can-Redefine-Classes': 'true',
              'Can-Retransform-Classes': 'true',

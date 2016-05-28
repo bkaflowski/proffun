@@ -7,7 +7,7 @@ void JNICALL
 vmInit(jvmtiEnv *jvmti, JNIEnv *env, jthread thread) {
   printf("Preparing to callback Java method \n");
 
-  char *className = "pl/kaflowski/Profiler";
+  char *className = "proffun/Profiler";
   char *methodName = "VMInit";
   char *descriptor = "()V";
 
@@ -73,7 +73,7 @@ Agent_OnLoad(JavaVM *jvm, char *options, void *reserverd){
     }
 
   eventCallbacks->VMInit = &vmInit;
-  eventCallbacks->ClassFileLoadHook = &loadClass;
+  //eventCallbacks->ClassFileLoadHook = &loadClass;
   
   returnCode = jvmti->SetEventCallbacks(eventCallbacks, (jint) sizeof(*eventCallbacks));
 
@@ -84,7 +84,7 @@ Agent_OnLoad(JavaVM *jvm, char *options, void *reserverd){
     }
 
   returnCode = jvmti->SetEventNotificationMode(JVMTI_ENABLE, JVMTI_EVENT_VM_INIT, (jthread)NULL);
-  returnCode = jvmti->SetEventNotificationMode(JVMTI_ENABLE, JVMTI_EVENT_CLASS_FILE_LOAD_HOOK, (jthread)NULL);
+  //returnCode = jvmti->SetEventNotificationMode(JVMTI_ENABLE, JVMTI_EVENT_CLASS_FILE_LOAD_HOOK, (jthread)NULL);
   
   if(returnCode != JNI_OK)
     {
