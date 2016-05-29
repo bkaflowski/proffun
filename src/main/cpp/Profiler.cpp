@@ -27,13 +27,58 @@ methodEntry(jvmtiEnv *jvmti_env,
   jint error_code = jvmti_env->GetMethodName(method, &name, NULL, NULL);
 
   if(error_code != JVMTI_ERROR_NONE) {
-    fprintf(stderr, "Method is not a jmethodID", error_code);
+    fprintf(stderr, "Problem occured during method name reading. EC: %i \n", error_code);
+    //what if error during deallocation due to lack of allocation? for now have to live with it
     jvmti_env->Deallocate((unsigned char *)name);
     return;
   }
   
-  printf("Method entered: %s\n", name);
+  //printf("Method entered: %s\n", name);
   jvmti_env->Deallocate((unsigned char *)name);
+}
+
+bool registerThread(char* threadName) {
+  printf("Name of newly registered thread: %s\n", threadName);
+}
+
+bool unregisterThread(char* threadName) {
+  printf("Name of unregistered thread: %s\n", threadName);
+}
+
+void JNICALL
+threadStart(jvmtiEnv *jvmti_env,
+	    JNIEnv* jni_env,
+	    jthread thread) {
+  jvmtiThreadInfo threadInfo;
+  jint error_code = jvmti_env->GetThreadInfo(thread, &threadInfo);
+
+  if(error_code != JVMTI_ERROR_NONE) {
+    fprintf(stderr, "Problem occured during receving thread info. EC: %i \n", error_code);
+    //what if error during deallocation due to lack of allocation? for now have to live with it
+    jvmti_env->Deallocate((unsigned char *)threadInfo.name);
+    return;
+  }
+
+  registerThread(threadInfo.name);
+  jvmti_env->Deallocate((unsigned char *)threadInfo.name);
+}
+
+void JNICALL
+threadEnd(jvmtiEnv *jvmti_env,
+	  JNIEnv* jni_env,
+	  jthread thread) {
+  jvmtiThreadInfo threadInfo;
+  jint error_code = jvmti_env->GetThreadInfo(thread, &threadInfo);
+
+  if(error_code != JVMTI_ERROR_NONE) {
+    fprintf(stderr, "Problem occured during receving thread info. EC: %i \n", error_code);
+    //what if error during deallocation due to lack of allocation? for now have to live with it
+    jvmti_env->Deallocate((unsigned char *)threadInfo.name);
+    return;
+  }
+
+  unregisterThread(threadInfo.name);
+  jvmti_env->Deallocate((unsigned char*)threadInfo.name);
 }
 
 JNIEXPORT jint JNICALL
@@ -74,22 +119,26 @@ Agent_OnLoad(JavaVM *jvm, char *options, void *reserverd){
     }
 
   //eventCallbacks->ClassFileLoadHook = &loadClass;
+  eventCallbacks->ThreadStart = &threadStart;
+  eventCallbacks->ThreadEnd = &threadEnd;
   eventCallbacks->MethodEntry = &methodEntry; 
   
   returnCode = jvmti->SetEventCallbacks(eventCallbacks, (jint) sizeof(*eventCallbacks));
 
   if(returnCode != JNI_OK)
     {
-      fprintf(stderr, "JVM blew up", returnCode);
+      fprintf(stderr, "JVM blew up with RC: %i", returnCode);
       exit(-1);
     }
 
   //returnCode = jvmti->SetEventNotificationMode(JVMTI_ENABLE, JVMTI_EVENT_CLASS_FILE_LOAD_HOOK, (jthread)NULL);
+  returnCode = jvmti->SetEventNotificationMode(JVMTI_ENABLE, JVMTI_EVENT_THREAD_START, (jthread)NULL);
+  returnCode = jvmti->SetEventNotificationMode(JVMTI_ENABLE, JVMTI_EVENT_THREAD_END, (jthread)NULL);
   returnCode = jvmti->SetEventNotificationMode(JVMTI_ENABLE, JVMTI_EVENT_METHOD_ENTRY, (jthread)NULL);
   
   if(returnCode != JNI_OK)
     {
-      fprintf(stderr, "JVM blew up 2.", returnCode);
+      fprintf(stderr, "JVM blew up 2 with RC %i", returnCode);
       exit(-1);
     }
   
