@@ -43,9 +43,6 @@ loadClass(jvmtiEnv *jvmti,
 	  unsigned char** new_class_data)
 {
   printf("Loading class: %s\n", name);
-  for(int i=0; i<class_data_len; i++) {
-    printf(reinterpret_cast<const char*>(class_data[i]));
-  }
 }
 
 JNIEXPORT jint JNICALL
@@ -73,7 +70,7 @@ Agent_OnLoad(JavaVM *jvm, char *options, void *reserverd){
     }
 
   eventCallbacks->VMInit = &vmInit;
-  //eventCallbacks->ClassFileLoadHook = &loadClass;
+  eventCallbacks->ClassFileLoadHook = &loadClass;
   
   returnCode = jvmti->SetEventCallbacks(eventCallbacks, (jint) sizeof(*eventCallbacks));
 
@@ -84,7 +81,7 @@ Agent_OnLoad(JavaVM *jvm, char *options, void *reserverd){
     }
 
   returnCode = jvmti->SetEventNotificationMode(JVMTI_ENABLE, JVMTI_EVENT_VM_INIT, (jthread)NULL);
-  //returnCode = jvmti->SetEventNotificationMode(JVMTI_ENABLE, JVMTI_EVENT_CLASS_FILE_LOAD_HOOK, (jthread)NULL);
+  returnCode = jvmti->SetEventNotificationMode(JVMTI_ENABLE, JVMTI_EVENT_CLASS_FILE_LOAD_HOOK, (jthread)NULL);
   
   if(returnCode != JNI_OK)
     {
