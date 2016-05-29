@@ -4,33 +4,6 @@
 
 
 void JNICALL
-vmInit(jvmtiEnv *jvmti, JNIEnv *env, jthread thread) {
-  printf("Preparing to callback Java method \n");
-
-  char *className = "proffun/Profiler";
-  char *methodName = "VMInit";
-  char *descriptor = "()V";
-
-  jclass callbackClass = env->FindClass(className);
-
-  if(!callbackClass) {
-    fprintf(stderr, "Unable to locate callback class.\n");
-    return;
-  }
-
-  jmethodID callbackMethodID = env->GetStaticMethodID(callbackClass, methodName, descriptor);
-  
-  if(!callbackMethodID) {
-    fprintf(stderr, "Unable to locate callback VMInit method\n");
-    return;
-  }
-
-  env->CallStaticVoidMethod(callbackClass, callbackMethodID, NULL);
-  
-  printf("VMInit, callback Java method returned successfully\n");
-}
-
-void JNICALL
 loadClass(jvmtiEnv *jvmti,
 	  JNIEnv* env,
 	  jclass class_being_redefined,
@@ -45,12 +18,30 @@ loadClass(jvmtiEnv *jvmti,
   printf("Loading class: %s\n", name);
 }
 
+void JNICALL
+methodEntry(jvmtiEnv *jvmti_env,
+	    JNIEnv* jni_env,
+	    jthread thread,
+	    jmethodID method) {
+  char* name;
+  jint error_code = jvmti_env->GetMethodName(method, &name, NULL, NULL);
+
+  if(error_code != JVMTI_ERROR_NONE) {
+    fprintf(stderr, "Method is not a jmethodID", error_code);
+    jvmti_env->Deallocate((unsigned char *)name);
+    return;
+  }
+  
+  printf("Method entered: %s\n", name);
+  jvmti_env->Deallocate((unsigned char *)name);
+}
+
 JNIEXPORT jint JNICALL
 Agent_OnLoad(JavaVM *jvm, char *options, void *reserverd){
   jvmtiEnv              *jvmti;
   jvmtiError            error;
   jint                  res;
-  jvmtiCapabilities     capabilities;
+  jvmtiCapabilities     *capabilities;
   jvmtiEventCallbacks   *eventCallbacks;
 
   jint returnCode = jvm->GetEnv((void **) &jvmti, JVMTI_VERSION_1_0);
@@ -60,6 +51,19 @@ Agent_OnLoad(JavaVM *jvm, char *options, void *reserverd){
     return JVMTI_ERROR_UNSUPPORTED_VERSION;
   }
 
+  capabilities = static_cast<jvmtiCapabilities*>(calloc(1, sizeof(jvmtiCapabilities)));
+
+  if(!capabilities) {
+    fprintf(stderr, "Unable to allocate memory\n");
+    return JVMTI_ERROR_OUT_OF_MEMORY;    
+  }
+
+  capabilities->can_generate_method_entry_events = 1;
+  returnCode = jvmti->AddCapabilities(capabilities);
+  if(returnCode != JNI_OK) {
+    fprintf(stderr, "Problem during setting capabilities.\n");
+    return JVMTI_ERROR_NOT_AVAILABLE;
+  }
 
   eventCallbacks = static_cast<jvmtiEventCallbacks*>(calloc(1, sizeof(jvmtiEventCallbacks)));
   
@@ -69,8 +73,8 @@ Agent_OnLoad(JavaVM *jvm, char *options, void *reserverd){
       return JVMTI_ERROR_OUT_OF_MEMORY;
     }
 
-  eventCallbacks->VMInit = &vmInit;
-  eventCallbacks->ClassFileLoadHook = &loadClass;
+  //eventCallbacks->ClassFileLoadHook = &loadClass;
+  eventCallbacks->MethodEntry = &methodEntry; 
   
   returnCode = jvmti->SetEventCallbacks(eventCallbacks, (jint) sizeof(*eventCallbacks));
 
@@ -80,8 +84,8 @@ Agent_OnLoad(JavaVM *jvm, char *options, void *reserverd){
       exit(-1);
     }
 
-  returnCode = jvmti->SetEventNotificationMode(JVMTI_ENABLE, JVMTI_EVENT_VM_INIT, (jthread)NULL);
-  returnCode = jvmti->SetEventNotificationMode(JVMTI_ENABLE, JVMTI_EVENT_CLASS_FILE_LOAD_HOOK, (jthread)NULL);
+  //returnCode = jvmti->SetEventNotificationMode(JVMTI_ENABLE, JVMTI_EVENT_CLASS_FILE_LOAD_HOOK, (jthread)NULL);
+  returnCode = jvmti->SetEventNotificationMode(JVMTI_ENABLE, JVMTI_EVENT_METHOD_ENTRY, (jthread)NULL);
   
   if(returnCode != JNI_OK)
     {
