@@ -2,6 +2,18 @@
 #include <jni.h>
 #include <stdlib.h>
 
+/*
+ * Hash function implementation thanks to http://stackoverflow.com/questions/98153/whats-the-best-hashing-algorithm-to-use-on-a-stl-string-when-using-hash-map
+ */
+unsigned int hash(const char* s, unsigned int seed = 0)
+{
+  unsigned int hash = seed;
+  while(*s)
+    {
+      hash = hash * 101 + *s++;
+    }
+  return hash;
+}
 
 void JNICALL
 loadClass(jvmtiEnv *jvmti,
@@ -32,8 +44,9 @@ methodEntry(jvmtiEnv *jvmti_env,
     jvmti_env->Deallocate((unsigned char *)name);
     return;
   }
-  
-  //printf("Method entered: %s\n", name);
+
+  unsigned int method_name_hash = hash(name, 123);
+  printf("Method entered: %s with hash: %i\n", name, method_name_hash);
   jvmti_env->Deallocate((unsigned char *)name);
 }
 
