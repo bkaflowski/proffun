@@ -2,6 +2,7 @@
 #include <jni.h>
 #include <stdlib.h>
 
+
 /*
  * Hash function implementation thanks to http://stackoverflow.com/questions/98153/whats-the-best-hashing-algorithm-to-use-on-a-stl-string-when-using-hash-map
  */
@@ -45,6 +46,7 @@ methodEntry(jvmtiEnv *jvmti_env,
     return;
   }
 
+   jvmti_env->SetThreadLocalStorage(thread, (const void*)"a");
   unsigned int method_name_hash = hash(name, 123);
   printf("Method entered: %s with hash: %i\n", name, method_name_hash);
   jvmti_env->Deallocate((unsigned char *)name);
@@ -72,7 +74,8 @@ threadStart(jvmtiEnv *jvmti_env,
     return;
   }
 
-  registerThread(threadInfo.name);
+  //error_code = jvmti_env->SetThreadLocalStorage(thread, (const void*)"a");
+  //printf("EC: %i\n", error_code);
   jvmti_env->Deallocate((unsigned char *)threadInfo.name);
 }
 
