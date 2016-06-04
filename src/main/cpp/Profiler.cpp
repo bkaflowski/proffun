@@ -120,7 +120,7 @@ Agent_OnLoad(JavaVM *jvm, char *options, void *reserverd){
   }
 
   capabilities->can_generate_method_entry_events = 1;
-  returnCode = jvmti->AddCapabilities(capabilities);
+  //returnCode = jvmti->AddCapabilities(capabilities);
   if(returnCode != JNI_OK) {
     fprintf(stderr, "Problem during setting capabilities.\n");
     return JVMTI_ERROR_NOT_AVAILABLE;
@@ -137,7 +137,7 @@ Agent_OnLoad(JavaVM *jvm, char *options, void *reserverd){
   //eventCallbacks->ClassFileLoadHook = &loadClass;
   eventCallbacks->ThreadStart = &threadStart;
   eventCallbacks->ThreadEnd = &threadEnd;
-  eventCallbacks->MethodEntry = &methodEntry; 
+  //eventCallbacks->MethodEntry = &methodEntry; 
   
   returnCode = jvmti->SetEventCallbacks(eventCallbacks, (jint) sizeof(*eventCallbacks));
 
@@ -150,7 +150,7 @@ Agent_OnLoad(JavaVM *jvm, char *options, void *reserverd){
   //returnCode = jvmti->SetEventNotificationMode(JVMTI_ENABLE, JVMTI_EVENT_CLASS_FILE_LOAD_HOOK, (jthread)NULL);
   returnCode = jvmti->SetEventNotificationMode(JVMTI_ENABLE, JVMTI_EVENT_THREAD_START, (jthread)NULL);
   returnCode = jvmti->SetEventNotificationMode(JVMTI_ENABLE, JVMTI_EVENT_THREAD_END, (jthread)NULL);
-  returnCode = jvmti->SetEventNotificationMode(JVMTI_ENABLE, JVMTI_EVENT_METHOD_ENTRY, (jthread)NULL);
+  //returnCode = jvmti->SetEventNotificationMode(JVMTI_ENABLE, JVMTI_EVENT_METHOD_ENTRY, (jthread)NULL);
   
   if(returnCode != JNI_OK)
     {

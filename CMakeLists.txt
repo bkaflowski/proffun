@@ -30,5 +30,9 @@ INCLUDE_DIRECTORIES(${JAVA_INCLUDE_PATH2})
 
 SET(SOURCE_FILES
 	${SRC}/Profiler.cpp)
+SET(SOURCE_FILES_NATIVE
+    ${SRC}/proffun_NativeSend.cpp
+    ${SRC}/proffun_NativeSend.h)
 
 add_library(agent SHARED ${SOURCE_FILES})
+add_library(nativesend SHARED ${SOURCE_FILES_NATIVE})

@@ -9,11 +9,12 @@ public class EventsRecorder {
             ThreadLocal.withInitial(() -> new MsgsBuffer(1024));
 
     public static void recordMethodEntry(long threadId, long nanoTime, String methodName, String className) {
-        eventsLog.get().write(1, threadId, nanoTime, methodName, className);
+        NativeSend.send(methodName, nanoTime);
+        //eventsLog.get().write(1, threadId, nanoTime, methodName, className);
     }
 
     public static void recordMethodExit(long threadId, long nanoTime, String methodName, String className) {
-        eventsLog.get().write(2, threadId, nanoTime, methodName, className);
+        //eventsLog.get().write(2, threadId, nanoTime, methodName, className);
     }
     
     private static class MsgsBuffer {

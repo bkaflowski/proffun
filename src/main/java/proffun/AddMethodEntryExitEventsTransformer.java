@@ -42,6 +42,7 @@ public class AddMethodEntryExitEventsTransformer implements ClassFileTransformer
                 || className.contains("EventsRecorder")
                 || className.contains("AddMethodEntryExitEventsTransformer")
                 || className.contains("EntryExitMethodAdapter")
+                || className.contains("NativeSend")
                 || className.contains("MethodEntryExitEventsVisitor");
     }
 
