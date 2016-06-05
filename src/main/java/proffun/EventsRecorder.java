@@ -22,12 +22,12 @@ public class EventsRecorder {
         Very PoC version -> add proper alignment within message, work over false sharing etc.
      */
     private static class MsgsBuffer {
+        private final ByteBuffer buffer;
+        private static final String CHARSET = "UTF-8";
         private static final int LONG_SIZE = 8;
         private static final int INT_SIZE = 4;
         private final int capacity;
         private int currentPosition;
-        private static final String CHARSET = "UTF-8";
-        private final ByteBuffer buffer;
 
         private MsgsBuffer(int capacity) {
             this.buffer = ByteBuffer.allocateDirect(capacity).order(ByteOrder.nativeOrder());
