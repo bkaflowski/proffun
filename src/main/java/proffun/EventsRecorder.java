@@ -2,21 +2,25 @@ package proffun;
 
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 
 public class EventsRecorder {
     
    private static final ThreadLocal<MsgsBuffer> eventsLog =
-            ThreadLocal.withInitial(() -> new MsgsBuffer(1024));
+            ThreadLocal.withInitial(() -> new MsgsBuffer(512));
 
     public static void recordMethodEntry(long threadId, long nanoTime, String methodName, String className) {
-        NativeSend.send(methodName, nanoTime);
-        //eventsLog.get().write(1, threadId, nanoTime, methodName, className);
+        //NativeSend.send(methodName, nanoTime);
+        eventsLog.get().write(1, threadId, nanoTime, methodName, className);
     }
 
     public static void recordMethodExit(long threadId, long nanoTime, String methodName, String className) {
-        //eventsLog.get().write(2, threadId, nanoTime, methodName, className);
+        eventsLog.get().write(2, threadId, nanoTime, methodName, className);
     }
     
+    /*
+        Very PoC version -> add proper alignment within message, work over false sharing etc.
+     */
     private static class MsgsBuffer {
         private static final int LONG_SIZE = 8;
         private static final int INT_SIZE = 4;
@@ -26,7 +30,7 @@ public class EventsRecorder {
         private final ByteBuffer buffer;
 
         private MsgsBuffer(int capacity) {
-            this.buffer = ByteBuffer.allocateDirect(capacity);
+            this.buffer = ByteBuffer.allocateDirect(capacity).order(ByteOrder.nativeOrder());
             this.capacity = capacity;
         }
         
@@ -37,9 +41,10 @@ public class EventsRecorder {
                 final int methodNameSize = methodNameBytes.length;
                 final int classNameSize = classNameBytes.length;
                 final int size = 2 * LONG_SIZE + 3 * INT_SIZE + methodNameSize + classNameSize;
-                
+
                 if(currentPosition + size > capacity) {
-                    send(buffer, currentPosition);
+                    //send(buffer, currentPosition);
+                    sendNative(buffer, currentPosition);
                     currentPosition = 0;
                     buffer.position(currentPosition);
                 }
@@ -85,6 +90,11 @@ public class EventsRecorder {
                 }
             }
             
+        }
+        
+        private void sendNative(ByteBuffer buffer, int length) {
+            buffer.position(0);
+            NativeSend.send(buffer, length);
         }
         
         private String getEventName(int eventType) {

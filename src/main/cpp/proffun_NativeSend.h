@@ -4,5 +4,5 @@
 
 extern "C"
 JNIEXPORT void JNICALL Java_proffun_NativeSend_send
-(JNIEnv *, jclass, jstring, jlong);
+(JNIEnv *, jclass, jobject, jint);
 
