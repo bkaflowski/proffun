@@ -12,6 +12,8 @@ public class AddMethodEntryExitEventsTransformer implements ClassFileTransformer
 
     @Override
     public byte[] transform(ClassLoader loader, String className, Class<?> classBeingRedefined, ProtectionDomain protectionDomain, byte[] classfileBuffer) throws IllegalClassFormatException {
+        
+        
         if (shouldNotInstrumentClass(className)) {
             return classfileBuffer;
         }
@@ -25,25 +27,20 @@ public class AddMethodEntryExitEventsTransformer implements ClassFileTransformer
     }
 
     private boolean shouldNotInstrumentClass(String className) {
-        return className.startsWith("com/sun")
-                || className.startsWith("java/")
-                || className.startsWith("javax/")
-                || className.startsWith("org/ietf")
-                || className.startsWith("org/jcp")
-                || className.startsWith("org/omg")
-                || className.startsWith("org/w3c")
-                || className.startsWith("org/xml")
-                || className.startsWith("sun/")
-                || className.startsWith("com/oracle/")
-                || className.startsWith("jdk/")
-                || className.startsWith("oracle/")
-                || className.startsWith("javafx/")
-                || className.contains("Agent")
-                || className.contains("EventsRecorder")
-                || className.contains("AddMethodEntryExitEventsTransformer")
-                || className.contains("EntryExitMethodAdapter")
-                || className.contains("NativeSend")
-                || className.contains("MethodEntryExitEventsVisitor");
+        return className.equals("proffun/Agent")
+                        || className.startsWith("proffun/EventsRecorder")
+                        || className.startsWith("proffun/AddMethodEntryExitEventsTransformer")
+                        || className.startsWith("proffun/EntryExitMethodAdapter")
+                        || className.startsWith("proffun/MethodEntryExitEventsVisitor")
+                        || className.startsWith("proffun/ObjectAllocationAdapter")
+                        || className.startsWith("proffun/NativeSend")
+                        || className.startsWith("proffun/MsgsBuffer")
+                        || className.startsWith("sun/instrument/")
+                        || className.startsWith("java/lang/instrument/")
+                        || className.startsWith("ognl/")
+                        || className.equals("java/lang/System")
+                        || className.startsWith("java/lang/ref/Reference")
+                        || className.startsWith("java/lang/ThreadLocal");
     }
 
 }

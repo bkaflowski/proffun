@@ -69,8 +69,9 @@ threadStart(jvmtiEnv *jvmti_env,
 
   if(error_code != JVMTI_ERROR_NONE) {
     fprintf(stderr, "Problem occured during receving thread info. EC: %i \n", error_code);
-    //what if error during deallocation due to lack of allocation? for now have to live with it
-    jvmti_env->Deallocate((unsigned char *)threadInfo.name);
+    if(threadInfo != NULL && threadInfo.name != NULL) {
+        jvmti_env->Deallocate((unsigned char *)threadInfo.name);
+    }
     return;
   }
 
@@ -88,8 +89,10 @@ threadEnd(jvmtiEnv *jvmti_env,
 
   if(error_code != JVMTI_ERROR_NONE) {
     fprintf(stderr, "Problem occured during receving thread info. EC: %i \n", error_code);
-    //what if error during deallocation due to lack of allocation? for now have to live with it
-    jvmti_env->Deallocate((unsigned char *)threadInfo.name);
+    if(threadInfo != NULL && threadInfo.name != NULL) {
+        jvmti_env->Deallocate((unsigned char *)threadInfo.name);
+    }
+
     return;
   }
 

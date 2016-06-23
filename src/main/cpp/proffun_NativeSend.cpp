@@ -24,8 +24,9 @@ jbyte* readByteArray(void* address, int arrayLength, int& alreadyReadBytes) {
 }
 
 char* barrayToString(jbyte* barray, int length) {
-  
+  //decode byte to char array here
 }
+
 
 JNIEXPORT void JNICALL Java_proffun_NativeSend_send(JNIEnv *env, jclass cls, jobject buffer, jint length)
 {

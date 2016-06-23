@@ -9,7 +9,7 @@ public class EntryExitMethodAdapter extends MethodVisitor {
     private final String className;
 
     public EntryExitMethodAdapter(MethodVisitor mv, String methodName, String className) {
-        super(Opcodes.ASM4, mv);
+        super(Opcodes.ASM5, mv);
         this.methodName = methodName;
         this.className = className;
     }
@@ -37,12 +37,12 @@ public class EntryExitMethodAdapter extends MethodVisitor {
     }
 
     private void instrumentWithEventRecording(String recordingMethodName) {
-        mv.visitMethodInsn(Opcodes.INVOKESTATIC, "java/lang/Thread", "currentThread", "()Ljava/lang/Thread;", false);
-        mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, "java/lang/Thread", "getId", "()J", false);
-        mv.visitMethodInsn(Opcodes.INVOKESTATIC, "java/lang/System", "nanoTime", "()J", false);
-        mv.visitLdcInsn(methodName);
-        mv.visitLdcInsn(className);
-        mv.visitMethodInsn(Opcodes.INVOKESTATIC, "Lproffun/EventsRecorder;",
-                recordingMethodName, "(JJLjava/lang/String;Ljava/lang/String;)V", false);
-    }
+            mv.visitMethodInsn(Opcodes.INVOKESTATIC, "java/lang/Thread", "currentThread", "()Ljava/lang/Thread;", false);
+            mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, "java/lang/Thread", "getId", "()J", false);
+            mv.visitMethodInsn(Opcodes.INVOKESTATIC, "java/lang/System", "nanoTime", "()J", false);
+            mv.visitLdcInsn(methodName);
+            mv.visitLdcInsn(className);
+            mv.visitMethodInsn(Opcodes.INVOKESTATIC, "Lproffun/EventsRecorder;",
+                    recordingMethodName, "(JJLjava/lang/String;Ljava/lang/String;)V", false);
+        }
 }
